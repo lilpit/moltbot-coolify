@@ -1,0 +1,175 @@
+# ============================================================================
+# MoltBot (Clawdbot) Docker Compose for Coolify
+# ============================================================================
+# 
+# Deploy in Coolify:
+# 1. Create a new "Docker Compose" service
+# 2. Point to this repository or upload these files
+# 3. Configure environment variables in Coolify UI
+# 4. Deploy!
+#
+# ============================================================================
+
+services:
+  # -------------------------------------------------------------------------
+  # Main Gateway Service
+  # -------------------------------------------------------------------------
+  moltbot-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
+        EXTRA_APT_PACKAGES: ${EXTRA_APT_PACKAGES:-}
+        INSTALL_CLAUDE_CODE: ${INSTALL_CLAUDE_CODE:-true}
+    container_name: moltbot-gateway
+    hostname: moltbot
+    restart: unless-stopped
+    
+    # Expose the gateway port
+    ports:
+      - "${GATEWAY_PORT:-18789}:18789"
+    
+    # Environment variables - configure in Coolify UI
+    environment:
+      # Gateway Configuration
+      - CLAWDBOT_GATEWAY_TOKEN=${CLAWDBOT_GATEWAY_TOKEN}
+      - GATEWAY_PORT=${GATEWAY_PORT:-18789}
+      - GATEWAY_VERBOSE=${GATEWAY_VERBOSE:-false}
+      
+      # Model Provider API Keys (at least one required)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      
+      # Model Selection
+      - CLAWDBOT_MODEL=${CLAWDBOT_MODEL:-anthropic/claude-sonnet-4-5}
+      
+      # Channel Tokens (optional)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_APP_TOKEN=${SLACK_APP_TOKEN:-}
+      
+      # Feature Toggles
+      - ENABLE_BROWSER=${ENABLE_BROWSER:-false}
+      - ENABLE_SANDBOX=${ENABLE_SANDBOX:-false}
+      
+      # Node environment
+      - NODE_ENV=production
+      - HOME=/home/node
+    
+    # Persistent volumes
+    volumes:
+      # MoltBot configuration and credentials
+      - moltbot-config:/home/node/.clawdbot
+      # Agent workspace
+      - moltbot-workspace:/home/node/clawd
+      # Claude credentials (for Claude Code automation)
+      - moltbot-claude:/home/node/.claude
+      # Optional: mount host directories for file access
+      # - ${HOST_DATA_PATH:-./data}:/home/node/data:rw
+    
+    # Resource limits (adjust based on your Coolify plan)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Labels for Coolify/Traefik integration
+    labels:
+      - "coolify.managed=true"
+      - "coolify.name=moltbot"
+      - "traefik.enable=true"
+      - "traefik.http.routers.moltbot.rule=Host(`${DOMAIN:-moltbot.localhost}`)"
+      - "traefik.http.routers.moltbot.entrypoints=websecure"
+      - "traefik.http.routers.moltbot.tls.certresolver=letsencrypt"
+      - "traefik.http.services.moltbot.loadbalancer.server.port=18789"
+      # WebSocket support
+      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.routers.moltbot.middlewares=moltbot-ws"
+
+  # -------------------------------------------------------------------------
+  # CLI Service (for running commands)
+  # -------------------------------------------------------------------------
+  moltbot-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
+    container_name: moltbot-cli
+    profiles:
+      - cli
+    
+    environment:
+      - CLAWDBOT_GATEWAY_TOKEN=${CLAWDBOT_GATEWAY_TOKEN}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - NODE_ENV=production
+      - HOME=/home/node
+    
+    volumes:
+      - moltbot-config:/home/node/.clawdbot
+      - moltbot-workspace:/home/node/clawd
+      - moltbot-claude:/home/node/.claude
+    
+    # Override entrypoint for CLI usage
+    entrypoint: ["clawdbot"]
+    command: ["--help"]
+    
+    # Connect to gateway network
+    network_mode: "service:moltbot-gateway"
+
+# ============================================================================
+# Named Volumes
+# ============================================================================
+volumes:
+  moltbot-config:
+    name: moltbot-config
+    labels:
+      - "coolify.volume=true"
+      - "description=MoltBot configuration and credentials"
+  
+  moltbot-workspace:
+    name: moltbot-workspace
+    labels:
+      - "coolify.volume=true"
+      - "description=MoltBot agent workspace"
+  
+  moltbot-claude:
+    name: moltbot-claude
+    labels:
+      - "coolify.volume=true"
+      - "description=Claude Code credentials"
+
+# ============================================================================
+# Networks (optional, Coolify manages this automatically)
+# ============================================================================
+networks:
+  default:
+    name: moltbot-network

@@ -1,0 +1,124 @@
+{
+  "$schema": "https://coolify.io/schemas/service.json",
+  "name": "MoltBot (Clawdbot)",
+  "description": "Self-hosted personal AI assistant with Claude automation. Multi-channel messaging support (WhatsApp, Telegram, Discord, Slack, etc.).",
+  "documentation": "https://docs.clawd.bot",
+  "icon": "🦞",
+  "tags": ["ai", "assistant", "automation", "claude", "chatbot", "telegram", "discord", "slack"],
+  "version": "1.0.0",
+  "services": {
+    "moltbot": {
+      "image": "moltbot-coolify",
+      "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+      },
+      "ports": {
+        "18789": {
+          "protocol": "http",
+          "public": true,
+          "description": "Gateway API & Dashboard"
+        }
+      },
+      "volumes": {
+        "/home/node/.clawdbot": {
+          "description": "Configuration and credentials",
+          "persistent": true
+        },
+        "/home/node/clawd": {
+          "description": "Agent workspace",
+          "persistent": true
+        },
+        "/home/node/.claude": {
+          "description": "Claude Code credentials",
+          "persistent": true
+        }
+      },
+      "environment": {
+        "CLAWDBOT_GATEWAY_TOKEN": {
+          "required": true,
+          "description": "Authentication token for gateway access",
+          "default": "",
+          "generateSecret": true
+        },
+        "ANTHROPIC_API_KEY": {
+          "required": false,
+          "description": "Anthropic (Claude) API key - recommended",
+          "default": ""
+        },
+        "OPENAI_API_KEY": {
+          "required": false,
+          "description": "OpenAI API key - alternative to Anthropic",
+          "default": ""
+        },
+        "OPENROUTER_API_KEY": {
+          "required": false,
+          "description": "OpenRouter API key - multi-model access",
+          "default": ""
+        },
+        "CLAWDBOT_MODEL": {
+          "required": false,
+          "description": "AI model to use (e.g., anthropic/claude-sonnet-4-5)",
+          "default": "anthropic/claude-sonnet-4-5"
+        },
+        "TELEGRAM_BOT_TOKEN": {
+          "required": false,
+          "description": "Telegram bot token from @BotFather",
+          "default": ""
+        },
+        "DISCORD_BOT_TOKEN": {
+          "required": false,
+          "description": "Discord bot token",
+          "default": ""
+        },
+        "SLACK_BOT_TOKEN": {
+          "required": false,
+          "description": "Slack bot token (xoxb-...)",
+          "default": ""
+        },
+        "SLACK_APP_TOKEN": {
+          "required": false,
+          "description": "Slack app token (xapp-...)",
+          "default": ""
+        },
+        "ENABLE_BROWSER": {
+          "required": false,
+          "description": "Enable browser automation",
+          "default": "false"
+        },
+        "ENABLE_SANDBOX": {
+          "required": false,
+          "description": "Enable sandboxed tool execution",
+          "default": "false"
+        },
+        "GATEWAY_VERBOSE": {
+          "required": false,
+          "description": "Enable verbose logging",
+          "default": "false"
+        }
+      },
+      "healthCheck": {
+        "path": "/health",
+        "port": 18789,
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3
+      },
+      "resources": {
+        "cpuLimit": 2,
+        "memoryLimit": "2G",
+        "cpuReservation": 0.5,
+        "memoryReservation": "512M"
+      }
+    }
+  },
+  "networks": {
+    "default": {
+      "driver": "bridge"
+    }
+  },
+  "labels": {
+    "traefik.enable": "true",
+    "traefik.http.services.moltbot.loadbalancer.server.port": "18789"
+  }
+}

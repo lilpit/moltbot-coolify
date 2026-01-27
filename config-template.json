@@ -1,0 +1,24 @@
+{
+  "gateway": {
+    "bind": "lan",
+    "port": 18789,
+    "auth": {
+      "mode": "token"
+    },
+    "controlUi": {
+      "allowInsecureAuth": true
+    }
+  },
+  "agent": {
+    "model": "anthropic/claude-sonnet-4-5"
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/home/node/clawd"
+    }
+  },
+  "browser": {
+    "enabled": false,
+    "headless": true
+  }
+}
