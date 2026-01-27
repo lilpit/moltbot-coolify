@@ -104,13 +104,21 @@ services:
       - "coolify.managed=true"
       - "coolify.name=moltbot"
       - "traefik.enable=true"
+      # Service definition
+      - "traefik.http.services.moltbot.loadbalancer.server.port=18789"
+      # WebSocket support middleware
+      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Upgrade=websocket"
+      # HTTP router (no TLS, accepts any host)
+      - "traefik.http.routers.moltbot-http.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.moltbot-http.entrypoints=http"
+      - "traefik.http.routers.moltbot-http.service=moltbot"
+      - "traefik.http.routers.moltbot-http.middlewares=moltbot-ws"
+      # HTTPS router (with TLS, domain-based)
       - "traefik.http.routers.moltbot.rule=Host(`${DOMAIN:-moltbot.localhost}`)"
       - "traefik.http.routers.moltbot.entrypoints=websecure"
       - "traefik.http.routers.moltbot.tls.certresolver=letsencrypt"
-      - "traefik.http.services.moltbot.loadbalancer.server.port=18789"
-      # WebSocket support
-      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Connection=Upgrade"
-      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.routers.moltbot.service=moltbot"
       - "traefik.http.routers.moltbot.middlewares=moltbot-ws"
 
   # -------------------------------------------------------------------------
