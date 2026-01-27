@@ -66,26 +66,11 @@ BASECONFIG
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
     fi
     
-    # Anthropic API Key
-    if [ -n "${ANTHROPIC_API_KEY}" ]; then
-        jq --arg key "${ANTHROPIC_API_KEY}" \
-           '.providers.anthropic.apiKey = $key' \
-           "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
-    fi
-    
-    # OpenAI API Key
-    if [ -n "${OPENAI_API_KEY}" ]; then
-        jq --arg key "${OPENAI_API_KEY}" \
-           '.providers.openai.apiKey = $key' \
-           "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
-    fi
-    
-    # OpenRouter API Key
-    if [ -n "${OPENROUTER_API_KEY}" ]; then
-        jq --arg key "${OPENROUTER_API_KEY}" \
-           '.providers.openrouter.apiKey = $key' \
-           "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
-    fi
+    # API Keys are read directly from environment variables:
+    # - ANTHROPIC_API_KEY
+    # - OPENAI_API_KEY  
+    # - OPENROUTER_API_KEY
+    # No need to add them to the config file
     
     # Telegram bot token
     if [ -n "${TELEGRAM_BOT_TOKEN}" ]; then
