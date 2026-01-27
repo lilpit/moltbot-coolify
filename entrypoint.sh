@@ -25,7 +25,7 @@ mkdir -p "${CONFIG_DIR}" "${WORKSPACE_DIR}" "${CONFIG_DIR}/credentials"
 generate_config() {
     echo "📝 Generating configuration..."
     
-    # Start with base config
+    # Start with base config (using new schema: agents.defaults.*)
     cat > "${CONFIG_FILE}" << 'BASECONFIG'
 {
   "gateway": {
@@ -38,12 +38,12 @@ generate_config() {
       "allowInsecureAuth": true
     }
   },
-  "agent": {
-    "model": "anthropic/claude-sonnet-4-5"
-  },
   "agents": {
     "defaults": {
-      "workspace": "/home/node/clawd"
+      "workspace": "/home/node/clawd",
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5"
+      }
     }
   }
 }
@@ -59,10 +59,10 @@ BASECONFIG
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
     fi
     
-    # Model configuration
+    # Model configuration (new schema: agents.defaults.model.primary)
     if [ -n "${CLAWDBOT_MODEL}" ]; then
         jq --arg model "${CLAWDBOT_MODEL}" \
-           '.agent.model = $model' \
+           '.agents.defaults.model.primary = $model' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
     fi
     

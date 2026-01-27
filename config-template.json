@@ -9,12 +9,12 @@
       "allowInsecureAuth": true
     }
   },
-  "agent": {
-    "model": "anthropic/claude-sonnet-4-5"
-  },
   "agents": {
     "defaults": {
-      "workspace": "/home/node/clawd"
+      "workspace": "/home/node/clawd",
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5"
+      }
     }
   },
   "browser": {
