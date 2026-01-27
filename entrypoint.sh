@@ -29,6 +29,7 @@ generate_config() {
     cat > "${CONFIG_FILE}" << 'BASECONFIG'
 {
   "gateway": {
+    "mode": "local",
     "bind": "lan",
     "port": 18789,
     "auth": {
