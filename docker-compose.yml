@@ -26,9 +26,10 @@ services:
     hostname: moltbot
     restart: unless-stopped
     
-    # Expose the gateway port
+    # Expose ports
     ports:
       - "${GATEWAY_PORT:-18789}:18789"
+      - "9117:9117"
     
     # Environment variables - configure in Coolify UI
     environment:
