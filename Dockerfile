@@ -41,10 +41,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ${EXTRA_APT_PACKAGES} \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Bun (required for build scripts)
-RUN curl -fsSL https://bun.sh/install | bash
-ENV PATH="/root/.bun/bin:${PATH}"
-
 # Enable corepack for pnpm
 RUN corepack enable
 
@@ -52,20 +48,35 @@ RUN corepack enable
 RUN mkdir -p /home/node/.clawdbot \
     /home/node/clawd \
     /home/node/.npm-global \
+    /home/node/.npm \
     /home/node/.claude \
+    /home/node/.bun \
     && chown -R node:node /home/node
+
+# Switch to non-root user for installations
+USER node
+
+# Install Bun (required for build scripts) as node user
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/home/node/.bun/bin:${PATH}"
 
 # Set working directory
 WORKDIR /app
 
-# Install MoltBot (Clawdbot) globally
+# Configure npm to use node-owned prefix and cache
 RUN npm config set prefix '/home/node/.npm-global' \
-    && npm install -g clawdbot@${CLAWDBOT_VERSION}
+    && npm config set cache '/home/node/.npm'
+
+# Install MoltBot (Clawdbot) globally as node user
+RUN npm install -g clawdbot@${CLAWDBOT_VERSION}
 
 # Install Claude Code CLI for automation (if enabled)
 RUN if [ "$INSTALL_CLAUDE_CODE" = "true" ]; then \
         npm install -g @anthropic-ai/claude-code; \
     fi
+
+# Switch back to root to copy files and set permissions
+USER root
 
 # Copy configuration and startup scripts
 COPY --chown=node:node entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -75,7 +86,7 @@ COPY --chown=node:node config-template.json /app/config-template.json
 # Make scripts executable
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/healthcheck.sh
 
-# Switch to non-root user
+# Switch back to non-root user for runtime
 USER node
 
 # Expose the gateway port

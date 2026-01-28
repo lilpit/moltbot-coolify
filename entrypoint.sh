@@ -16,8 +16,18 @@ CONFIG_DIR="${CLAWDBOT_HOME:-/home/node/.clawdbot}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/home/node/clawd}"
 CONFIG_FILE="${CONFIG_DIR}/clawdbot.json"
 
-# Ensure directories exist
-mkdir -p "${CONFIG_DIR}" "${WORKSPACE_DIR}" "${CONFIG_DIR}/credentials"
+# Ensure directories exist with correct ownership
+mkdir -p "${CONFIG_DIR}" "${WORKSPACE_DIR}" "${CONFIG_DIR}/credentials" "${HOME}/.npm"
+
+# Fix npm cache permissions if they exist (handles volume persistence)
+if [ -d "${HOME}/.npm" ]; then
+    # Only try to fix if we detect permission issues
+    if [ ! -w "${HOME}/.npm" ] 2>/dev/null; then
+        echo "⚠️  Detected npm cache permission issues, attempting to fix..."
+        # This will fail silently if we don't have permissions, which is fine
+        chown -R "$(id -u):$(id -g)" "${HOME}/.npm" 2>/dev/null || true
+    fi
+fi
 
 # ============================================================================
 # Generate configuration from environment variables
