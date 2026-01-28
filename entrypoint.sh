@@ -258,21 +258,47 @@ show_connection_info() {
 }
 
 # ============================================================================
+# Clean up stale lock files from previous runs
+# ============================================================================
+cleanup_stale_locks() {
+    echo "🧹 Cleaning up stale lock files..."
+
+    local lock_count=0
+
+    # Find and remove all .lock files in agent sessions directories
+    if [ -d "${CONFIG_DIR}/agents" ]; then
+        while IFS= read -r -d '' lockfile; do
+            rm -f "$lockfile"
+            ((lock_count++))
+        done < <(find "${CONFIG_DIR}/agents" -name "*.lock" -print0 2>/dev/null)
+
+        if [ $lock_count -gt 0 ]; then
+            echo "✅ Removed ${lock_count} stale lock file(s)"
+        else
+            echo "✅ No stale lock files found"
+        fi
+    fi
+}
+
+# ============================================================================
 # Main execution
 # ============================================================================
 main() {
     # Initialize token
     init_gateway_token
-    
+
+    # Clean up stale locks from previous container crashes
+    cleanup_stale_locks
+
     # Generate or update configuration
     generate_config
-    
+
     # Setup Claude automation
     setup_claude_automation
-    
+
     # Show connection info
     show_connection_info
-    
+
     # Start the gateway
     echo "🚀 Starting MoltBot Gateway..."
     exec clawdbot gateway \
