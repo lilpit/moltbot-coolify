@@ -1,14 +1,14 @@
 {
   "$schema": "https://coolify.io/schemas/service.json",
-  "name": "MoltBot (Clawdbot)",
+  "name": "OpenClaw (Clawdbot)",
   "description": "Self-hosted personal AI assistant with Claude automation. Multi-channel messaging support (WhatsApp, Telegram, Discord, Slack, etc.).",
   "documentation": "https://docs.clawd.bot",
   "icon": "🦞",
   "tags": ["ai", "assistant", "automation", "claude", "chatbot", "telegram", "discord", "slack"],
   "version": "1.0.0",
   "services": {
-    "moltbot": {
-      "image": "moltbot-coolify",
+    "openclaw": {
+      "image": "openclaw-coolify",
       "build": {
         "dockerfile": "Dockerfile",
         "context": "."
@@ -119,6 +119,6 @@
   },
   "labels": {
     "traefik.enable": "true",
-    "traefik.http.services.moltbot.loadbalancer.server.port": "18789"
+    "traefik.http.services.openclaw.loadbalancer.server.port": "18789"
   }
 }

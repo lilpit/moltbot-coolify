@@ -1,10 +1,10 @@
-# MoltBot (Clawdbot) Dockerfile for Coolify
+# OpenClaw (Clawdbot) Dockerfile for Coolify
 # Self-hosted personal AI assistant with Claude automation
-# https://github.com/moltbot/moltbot
+# https://github.com/openclaw/openclaw
 
 FROM node:22-bookworm
 
-LABEL maintainer="MoltBot Coolify Configuration"
+LABEL maintainer="OpenClaw Coolify Configuration"
 LABEL description="Personal AI Assistant with Claude automation for Coolify deployment"
 LABEL version="1.0.0"
 
@@ -67,8 +67,8 @@ WORKDIR /app
 RUN npm config set prefix '/home/node/.npm-global' \
     && npm config set cache '/home/node/.npm'
 
-# Install MoltBot (Clawdbot) globally as node user
-RUN npm install -g clawdbot@${CLAWDBOT_VERSION}
+# Install OpenClaw (openclaw) globally as node user
+RUN npm install -g openclaw@${CLAWDBOT_VERSION}
 
 # Install Claude Code CLI for automation (if enabled)
 RUN if [ "$INSTALL_CLAUDE_CODE" = "true" ]; then \
