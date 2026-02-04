@@ -1,5 +1,5 @@
 # ============================================================================
-# MoltBot (Clawdbot) Docker Compose for Coolify
+# OpenClaw (Clawdbot) Docker Compose for Coolify
 # ============================================================================
 # 
 # Deploy in Coolify:
@@ -14,7 +14,7 @@ services:
   # -------------------------------------------------------------------------
   # Main Gateway Service
   # -------------------------------------------------------------------------
-  moltbot-gateway:
+  openclaw-gateway:
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,8 +22,8 @@ services:
         CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
         EXTRA_APT_PACKAGES: ${EXTRA_APT_PACKAGES:-}
         INSTALL_CLAUDE_CODE: ${INSTALL_CLAUDE_CODE:-true}
-    container_name: moltbot-gateway
-    hostname: moltbot
+    container_name: openclaw-gateway
+    hostname: openclaw
     restart: unless-stopped
     
     # Expose ports
@@ -62,11 +62,11 @@ services:
     
     # Persistent volumes
     volumes:
-      # MoltBot configuration and credentials
+      # OpenClaw configuration and credentials (persisted from moltbot)
       - moltbot-config:/home/node/.clawdbot
-      # Agent workspace
+      # Agent workspace (persisted from moltbot)
       - moltbot-workspace:/home/node/clawd
-      # Claude credentials (for Claude Code automation)
+      # Claude credentials for Claude Code automation (persisted from moltbot)
       - moltbot-claude:/home/node/.claude
       # Optional: mount host directories for file access
       # - ${HOST_DATA_PATH:-./data}:/home/node/data:rw
@@ -103,35 +103,35 @@ services:
     # Labels for Coolify/Traefik integration
     labels:
       - "coolify.managed=true"
-      - "coolify.name=moltbot"
+      - "coolify.name=openclaw"
       - "traefik.enable=true"
       # Service definition
-      - "traefik.http.services.moltbot.loadbalancer.server.port=18789"
+      - "traefik.http.services.openclaw.loadbalancer.server.port=18789"
       # WebSocket support middleware
-      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Connection=Upgrade"
-      - "traefik.http.middlewares.moltbot-ws.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.middlewares.openclaw-ws.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.openclaw-ws.headers.customrequestheaders.Upgrade=websocket"
       # HTTP router (no TLS, accepts any host)
-      - "traefik.http.routers.moltbot-http.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.moltbot-http.entrypoints=http"
-      - "traefik.http.routers.moltbot-http.service=moltbot"
-      - "traefik.http.routers.moltbot-http.middlewares=moltbot-ws"
+      - "traefik.http.routers.openclaw-http.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.openclaw-http.entrypoints=http"
+      - "traefik.http.routers.openclaw-http.service=openclaw"
+      - "traefik.http.routers.openclaw-http.middlewares=openclaw-ws"
       # HTTPS router (with TLS, domain-based)
-      - "traefik.http.routers.moltbot.rule=Host(`${DOMAIN:-moltbot.localhost}`)"
-      - "traefik.http.routers.moltbot.entrypoints=websecure"
-      - "traefik.http.routers.moltbot.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.moltbot.service=moltbot"
-      - "traefik.http.routers.moltbot.middlewares=moltbot-ws"
+      - "traefik.http.routers.openclaw.rule=Host(`${DOMAIN:-openclaw.localhost}`)"
+      - "traefik.http.routers.openclaw.entrypoints=websecure"
+      - "traefik.http.routers.openclaw.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.openclaw.service=openclaw"
+      - "traefik.http.routers.openclaw.middlewares=openclaw-ws"
 
   # -------------------------------------------------------------------------
   # CLI Service (for running commands)
   # -------------------------------------------------------------------------
-  moltbot-cli:
+  openclaw-cli:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
-    container_name: moltbot-cli
+    container_name: openclaw-cli
     profiles:
       - cli
     
@@ -146,39 +146,39 @@ services:
       - moltbot-config:/home/node/.clawdbot
       - moltbot-workspace:/home/node/clawd
       - moltbot-claude:/home/node/.claude
-    
+
     # Override entrypoint for CLI usage
     entrypoint: ["clawdbot"]
     command: ["--help"]
-    
+
     # Connect to gateway network
-    network_mode: "service:moltbot-gateway"
+    network_mode: "service:openclaw-gateway"
 
 # ============================================================================
-# Named Volumes
+# Named Volumes (persisted from moltbot for data continuity)
 # ============================================================================
 volumes:
   moltbot-config:
     name: moltbot-config
     labels:
       - "coolify.volume=true"
-      - "description=MoltBot configuration and credentials"
-  
+      - "description=OpenClaw configuration and credentials (persisted)"
+
   moltbot-workspace:
     name: moltbot-workspace
     labels:
       - "coolify.volume=true"
-      - "description=MoltBot agent workspace"
-  
+      - "description=OpenClaw agent workspace (persisted)"
+
   moltbot-claude:
     name: moltbot-claude
     labels:
       - "coolify.volume=true"
-      - "description=Claude Code credentials"
+      - "description=Claude Code credentials (persisted)"
 
 # ============================================================================
 # Networks (optional, Coolify manages this automatically)
 # ============================================================================
 networks:
   default:
-    name: moltbot-network
+    name: openclaw-network

@@ -1,10 +1,10 @@
-# 🦞 MoltBot (Clawdbot) for Coolify
+# 🦞 OpenClaw (Clawdbot) for Coolify
 
 Deploy your own personal AI assistant with Claude automation in Coolify.
 
 ## Features
 
-- **Self-hosted AI Assistant**: Run MoltBot on your own infrastructure
+- **Self-hosted AI Assistant**: Run OpenClaw on your own infrastructure
 - **Claude Automation**: Pre-configured with Claude Code CLI for automation tasks
 - **Multi-channel Support**: Connect to Telegram, Discord, Slack, WhatsApp, and more
 - **Gateway Exposed**: Ready for external configuration via web dashboard
@@ -76,7 +76,7 @@ openssl rand -hex 32
 
 ## Accessing the Dashboard
 
-Once deployed, access your MoltBot dashboard at:
+Once deployed, access your OpenClaw dashboard at:
 
 ```
 https://your-domain/?token=YOUR_GATEWAY_TOKEN
@@ -90,22 +90,22 @@ http://your-server-ip:18789/?token=YOUR_GATEWAY_TOKEN
 
 ## Gateway Configuration
 
-After deployment, you can further configure MoltBot through:
+After deployment, you can further configure OpenClaw through:
 
 1. **Web Dashboard**: Access at your configured domain
-2. **CLI Commands**: Use the `moltbot-cli` service
+2. **CLI Commands**: Use the `openclaw-cli` service
 3. **Configuration File**: Mounted at `/home/node/.clawdbot/clawdbot.json`
 
 ### Using the CLI
 
 ```bash
 # Run CLI commands
-docker compose --profile cli run --rm moltbot-cli <command>
+docker compose --profile cli run --rm openclaw-cli <command>
 
 # Examples:
-docker compose --profile cli run --rm moltbot-cli status
-docker compose --profile cli run --rm moltbot-cli channels list
-docker compose --profile cli run --rm moltbot-cli doctor
+docker compose --profile cli run --rm openclaw-cli status
+docker compose --profile cli run --rm openclaw-cli channels list
+docker compose --profile cli run --rm openclaw-cli doctor
 ```
 
 ## Adding Messaging Channels
@@ -134,7 +134,7 @@ docker compose --profile cli run --rm moltbot-cli doctor
 After deployment, link WhatsApp via CLI:
 
 ```bash
-docker compose --profile cli run --rm moltbot-cli channels login
+docker compose --profile cli run --rm openclaw-cli channels login
 ```
 
 Scan the QR code with your WhatsApp app.
@@ -152,7 +152,7 @@ Mount your custom files or edit through the dashboard:
 
 ```bash
 # Access the workspace
-docker exec -it moltbot-gateway bash
+docker exec -it openclaw-gateway bash
 cd /home/node/clawd
 ```
 
@@ -160,9 +160,11 @@ cd /home/node/clawd
 
 | Volume | Path | Purpose |
 |--------|------|---------|
-| `moltbot-config` | `/home/node/.clawdbot` | Configuration & credentials |
-| `moltbot-workspace` | `/home/node/clawd` | Agent workspace |
-| `moltbot-claude` | `/home/node/.claude` | Claude Code credentials |
+| `moltbot-config` | `/home/node/.clawdbot` | Configuration & credentials (persisted) |
+| `moltbot-workspace` | `/home/node/clawd` | Agent workspace (persisted) |
+| `moltbot-claude` | `/home/node/.claude` | Claude Code credentials (persisted) |
+
+> **Note**: Volume names retain the `moltbot-` prefix to preserve existing data during the migration to OpenClaw.
 
 ## Health Check
 
@@ -187,19 +189,19 @@ Set `DOMAIN` environment variable to your domain.
 ### Check Logs
 
 ```bash
-docker compose logs -f moltbot-gateway
+docker compose logs -f openclaw-gateway
 ```
 
 ### Check Health
 
 ```bash
-docker compose exec moltbot-gateway /usr/local/bin/healthcheck.sh
+docker compose exec openclaw-gateway /usr/local/bin/healthcheck.sh
 ```
 
 ### Run Doctor
 
 ```bash
-docker compose --profile cli run --rm moltbot-cli doctor
+docker compose --profile cli run --rm openclaw-cli doctor
 ```
 
 ### Reset Configuration
@@ -219,13 +221,13 @@ docker compose up -d
 
 ## Resources
 
-- [MoltBot Documentation](https://docs.clawd.bot)
-- [GitHub Repository](https://github.com/moltbot/moltbot)
+- [OpenClaw Documentation](https://docs.clawd.bot)
+- [GitHub Repository](https://github.com/openclaw/openclaw)
 - [Discord Community](https://discord.gg/clawd)
 
 ## License
 
-MIT License - See [LICENSE](https://github.com/moltbot/moltbot/blob/main/LICENSE)
+MIT License - See [LICENSE](https://github.com/openclaw/openclaw/blob/main/LICENSE)
 
 ---
 

@@ -2,12 +2,12 @@
 set -e
 
 # ============================================================================
-# MoltBot (Clawdbot) Entrypoint for Coolify
+# OpenClaw (Clawdbot) Entrypoint for Coolify
 # Handles automatic configuration and Claude automation setup
 # ============================================================================
 
 echo "╔══════════════════════════════════════════════════════════════════════╗"
-echo "║        🦞 MoltBot (Clawdbot) - Personal AI Assistant                 ║"
+echo "║        🦞 OpenClaw (Clawdbot) - Personal AI Assistant                ║"
 echo "║             Coolify Self-Hosted Deployment                           ║"
 echo "╚══════════════════════════════════════════════════════════════════════╝"
 
@@ -135,9 +135,9 @@ setup_claude_automation() {
         # Create AGENTS.md for workspace configuration
         if [ ! -f "${WORKSPACE_DIR}/AGENTS.md" ]; then
             cat > "${WORKSPACE_DIR}/AGENTS.md" << 'AGENTSMD'
-# MoltBot Agent Workspace
+# OpenClaw Agent Workspace
 
-This workspace is configured for automated AI assistance via MoltBot.
+This workspace is configured for automated AI assistance via OpenClaw.
 
 ## Capabilities
 
@@ -165,9 +165,9 @@ AGENTSMD
         # Create SOUL.md for personality configuration
         if [ ! -f "${WORKSPACE_DIR}/SOUL.md" ]; then
             cat > "${WORKSPACE_DIR}/SOUL.md" << 'SOULMD'
-# MoltBot Soul Configuration
+# OpenClaw Soul Configuration
 
-You are MoltBot, a helpful personal AI assistant running in a self-hosted environment.
+You are OpenClaw, a helpful personal AI assistant running in a self-hosted environment.
 
 ## Personality
 
@@ -239,7 +239,7 @@ show_connection_info() {
     
     echo ""
     echo "════════════════════════════════════════════════════════════════════════"
-    echo "🌐 MoltBot Gateway is starting..."
+    echo "🌐 OpenClaw Gateway is starting..."
     echo "════════════════════════════════════════════════════════════════════════"
     echo ""
     echo "📡 Gateway URL:     http://${hostname}:18789"
@@ -300,8 +300,8 @@ main() {
     show_connection_info
 
     # Start the gateway
-    echo "🚀 Starting MoltBot Gateway..."
-    exec clawdbot gateway \
+    echo "🚀 Starting OpenClaw Gateway..."
+    exec openclaw gateway \
         --port "${GATEWAY_PORT:-18789}" \
         --token "${CLAWDBOT_GATEWAY_TOKEN}" \
         ${GATEWAY_VERBOSE:+--verbose}

@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# MoltBot Health Check Script for Coolify
+# OpenClaw Health Check Script for Coolify
 # ============================================================================
 
 GATEWAY_PORT="${GATEWAY_PORT:-18789}"
