@@ -16,6 +16,12 @@ CONFIG_DIR="${OPENCLAW_HOME:-/home/node/.openclaw}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/home/node/clawd}"
 CONFIG_FILE="${CONFIG_DIR}/openclaw.json"
 
+# Set up D-Bus and systemd environment for openclaw gateway
+# See: https://github.com/openclaw/openclaw/issues/1818
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+mkdir -p "${XDG_RUNTIME_DIR}"
+chmod 700 "${XDG_RUNTIME_DIR}"
+
 # Ensure directories exist with correct ownership
 mkdir -p "${CONFIG_DIR}" "${WORKSPACE_DIR}" "${CONFIG_DIR}/credentials" "${HOME}/.npm"
 
@@ -304,6 +310,15 @@ main() {
 
     # Start the gateway
     echo "🚀 Starting OpenClaw Gateway..."
+
+    # Initialize D-Bus session if not already running
+    if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
+        echo "🔧 Initializing D-Bus session..."
+        eval $(dbus-launch --sh-syntax)
+        export DBUS_SESSION_BUS_ADDRESS
+        export DBUS_SESSION_BUS_PID
+    fi
+
     exec openclaw gateway start \
         --port "${GATEWAY_PORT:-18789}" \
         --token "${OPENCLAW_GATEWAY_TOKEN}" \

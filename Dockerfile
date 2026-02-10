@@ -32,6 +32,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     dumb-init \
     procps \
     netcat-openbsd \
+    # D-Bus for systemd user services (required by openclaw gateway)
+    dbus-user-session \
+    systemd \
     # For browser automation (optional)
     chromium \
     chromium-driver \
