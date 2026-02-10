@@ -22,7 +22,11 @@
       },
       "volumes": {
         "/home/node/.clawdbot": {
-          "description": "Configuration and credentials",
+          "description": "Legacy Clawdbot configuration (backward compatibility)",
+          "persistent": true
+        },
+        "/home/node/.openclaw": {
+          "description": "OpenClaw configuration and credentials",
           "persistent": true
         },
         "/home/node/clawd": {
@@ -35,7 +39,7 @@
         }
       },
       "environment": {
-        "CLAWDBOT_GATEWAY_TOKEN": {
+        "OPENCLAW_GATEWAY_TOKEN": {
           "required": true,
           "description": "Authentication token for gateway access",
           "default": "",
@@ -56,7 +60,7 @@
           "description": "OpenRouter API key - multi-model access",
           "default": ""
         },
-        "CLAWDBOT_MODEL": {
+        "OPENCLAW_MODEL": {
           "required": false,
           "description": "AI model to use (e.g., anthropic/claude-sonnet-4-5)",
           "default": "anthropic/claude-sonnet-4-5"

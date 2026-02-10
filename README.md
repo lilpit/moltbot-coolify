@@ -34,7 +34,7 @@ Set these in your Coolify service settings:
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `CLAWDBOT_GATEWAY_TOKEN` | Authentication token for the gateway | ✅ Yes |
+| `OPENCLAW_GATEWAY_TOKEN` | Authentication token for the gateway | ✅ Yes |
 | `ANTHROPIC_API_KEY` | Claude API key | ✅ Yes* |
 | `OPENAI_API_KEY` | OpenAI API key | ⚡ Alternative |
 | `OPENROUTER_API_KEY` | OpenRouter API key | ⚡ Alternative |
@@ -53,7 +53,7 @@ openssl rand -hex 32
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAWDBOT_MODEL` | `anthropic/claude-sonnet-4-5` | AI model to use |
+| `OPENCLAW_MODEL` | `anthropic/claude-sonnet-4-5` | AI model to use |
 | `GATEWAY_PORT` | `18789` | Gateway port |
 | `GATEWAY_VERBOSE` | `false` | Enable verbose logging |
 
@@ -94,7 +94,7 @@ After deployment, you can further configure OpenClaw through:
 
 1. **Web Dashboard**: Access at your configured domain
 2. **CLI Commands**: Use the `openclaw-cli` service
-3. **Configuration File**: Mounted at `/home/node/.clawdbot/clawdbot.json`
+3. **Configuration File**: Mounted at `/home/node/.openclaw/openclaw.json` (new) or `/home/node/.clawdbot/clawdbot.json` (legacy)
 
 ### Using the CLI
 
@@ -110,11 +110,14 @@ docker compose --profile cli run --rm openclaw-cli doctor
 
 ## Adding Messaging Channels
 
+> **Note**: Channels are automatically enabled when you provide their tokens. Simply add the environment variable and restart the service.
+
 ### Telegram
 
 1. Create a bot via [@BotFather](https://t.me/BotFather)
 2. Add `TELEGRAM_BOT_TOKEN` to Coolify environment
 3. Redeploy or restart the service
+4. ✅ Telegram channel will be automatically enabled
 
 ### Discord
 
@@ -122,12 +125,14 @@ docker compose --profile cli run --rm openclaw-cli doctor
 2. Get the bot token
 3. Add `DISCORD_BOT_TOKEN` to Coolify environment
 4. Invite bot to your server
+5. ✅ Discord channel will be automatically enabled
 
 ### Slack
 
 1. Create a Slack App in [Slack API](https://api.slack.com/apps)
 2. Enable Socket Mode
 3. Add `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN` to Coolify environment
+4. ✅ Slack channel will be automatically enabled
 
 ### WhatsApp
 
@@ -160,11 +165,12 @@ cd /home/node/clawd
 
 | Volume | Path | Purpose |
 |--------|------|---------|
-| `moltbot-config` | `/home/node/.clawdbot` | Configuration & credentials (persisted) |
+| `moltbot-config` | `/home/node/.clawdbot` | Legacy Clawdbot configuration (backward compatibility) |
+| `openclaw-config` | `/home/node/.openclaw` | OpenClaw configuration & credentials |
 | `moltbot-workspace` | `/home/node/clawd` | Agent workspace (persisted) |
 | `moltbot-claude` | `/home/node/.claude` | Claude Code credentials (persisted) |
 
-> **Note**: Volume names retain the `moltbot-` prefix to preserve existing data during the migration to OpenClaw.
+> **Note**: Both legacy `.clawdbot` and new `.openclaw` paths are mounted to ensure backward compatibility and smooth migration. The `moltbot-*` volume names preserve existing data from the MoltBot → OpenClaw migration.
 
 ## Health Check
 

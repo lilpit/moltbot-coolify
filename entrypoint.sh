@@ -12,9 +12,9 @@ echo "║             Coolify Self-Hosted Deployment                           �
 echo "╚══════════════════════════════════════════════════════════════════════╝"
 
 # Configuration paths
-CONFIG_DIR="${CLAWDBOT_HOME:-/home/node/.clawdbot}"
+CONFIG_DIR="${OPENCLAW_HOME:-/home/node/.openclaw}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/home/node/clawd}"
-CONFIG_FILE="${CONFIG_DIR}/clawdbot.json"
+CONFIG_FILE="${CONFIG_DIR}/openclaw.json"
 
 # Ensure directories exist with correct ownership
 mkdir -p "${CONFIG_DIR}" "${WORKSPACE_DIR}" "${CONFIG_DIR}/credentials" "${HOME}/.npm"
@@ -64,15 +64,15 @@ BASECONFIG
     local temp_config=$(mktemp)
     
     # Gateway token
-    if [ -n "${CLAWDBOT_GATEWAY_TOKEN}" ]; then
-        jq --arg token "${CLAWDBOT_GATEWAY_TOKEN}" \
+    if [ -n "${OPENCLAW_GATEWAY_TOKEN}" ]; then
+        jq --arg token "${OPENCLAW_GATEWAY_TOKEN}" \
            '.gateway.auth.token = $token' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
     fi
-    
+
     # Model configuration (new schema: agents.defaults.model.primary)
-    if [ -n "${CLAWDBOT_MODEL}" ]; then
-        jq --arg model "${CLAWDBOT_MODEL}" \
+    if [ -n "${OPENCLAW_MODEL}" ]; then
+        jq --arg model "${OPENCLAW_MODEL}" \
            '.agents.defaults.model.primary = $model' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
     fi
@@ -83,25 +83,28 @@ BASECONFIG
     # - OPENROUTER_API_KEY
     # No need to add them to the config file
     
-    # Telegram bot token
+    # Telegram bot token - automatically enable if configured
     if [ -n "${TELEGRAM_BOT_TOKEN}" ]; then
         jq --arg token "${TELEGRAM_BOT_TOKEN}" \
-           '.channels.telegram.botToken = $token' \
+           '.channels.telegram.enabled = true | .channels.telegram.botToken = $token' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
+        echo "✅ Telegram channel enabled with provided token"
     fi
-    
-    # Discord bot token
+
+    # Discord bot token - automatically enable if configured
     if [ -n "${DISCORD_BOT_TOKEN}" ]; then
         jq --arg token "${DISCORD_BOT_TOKEN}" \
-           '.channels.discord.token = $token' \
+           '.channels.discord.enabled = true | .channels.discord.token = $token' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
+        echo "✅ Discord channel enabled with provided token"
     fi
-    
-    # Slack tokens
+
+    # Slack tokens - automatically enable if configured
     if [ -n "${SLACK_BOT_TOKEN}" ] && [ -n "${SLACK_APP_TOKEN}" ]; then
         jq --arg bot "${SLACK_BOT_TOKEN}" --arg app "${SLACK_APP_TOKEN}" \
-           '.channels.slack.botToken = $bot | .channels.slack.appToken = $app' \
+           '.channels.slack.enabled = true | .channels.slack.botToken = $bot | .channels.slack.appToken = $app' \
            "${CONFIG_FILE}" > "${temp_config}" && mv "${temp_config}" "${CONFIG_FILE}"
+        echo "✅ Slack channel enabled with provided tokens"
     fi
     
     # Enable browser if requested
@@ -202,13 +205,13 @@ SOULMD
 # Initialize or update gateway token
 # ============================================================================
 init_gateway_token() {
-    if [ -z "${CLAWDBOT_GATEWAY_TOKEN}" ]; then
+    if [ -z "${OPENCLAW_GATEWAY_TOKEN}" ]; then
         # Generate a new token if not provided
-        export CLAWDBOT_GATEWAY_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | xxd -p)
-        echo "🔑 Generated new gateway token: ${CLAWDBOT_GATEWAY_TOKEN:0:8}..."
+        export OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 32 /dev/urandom | xxd -p)
+        echo "🔑 Generated new gateway token: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
         echo "   Store this token securely for future access!"
     else
-        echo "🔑 Using provided gateway token: ${CLAWDBOT_GATEWAY_TOKEN:0:8}..."
+        echo "🔑 Using provided gateway token: ${OPENCLAW_GATEWAY_TOKEN:0:8}..."
     fi
 }
 
@@ -243,7 +246,7 @@ show_connection_info() {
     echo "════════════════════════════════════════════════════════════════════════"
     echo ""
     echo "📡 Gateway URL:     http://${hostname}:18789"
-    echo "🔐 Dashboard URL:   http://${hostname}:18789/?token=${CLAWDBOT_GATEWAY_TOKEN}"
+    echo "🔐 Dashboard URL:   http://${hostname}:18789/?token=${OPENCLAW_GATEWAY_TOKEN}"
     echo ""
     echo "📱 Coolify Access:"
     echo "   Configure your Coolify service to expose port 18789"
@@ -301,9 +304,10 @@ main() {
 
     # Start the gateway
     echo "🚀 Starting OpenClaw Gateway..."
-    exec openclaw gateway \
+    exec openclaw gateway start \
         --port "${GATEWAY_PORT:-18789}" \
-        --token "${CLAWDBOT_GATEWAY_TOKEN}" \
+        --token "${OPENCLAW_GATEWAY_TOKEN}" \
+        --foreground \
         ${GATEWAY_VERBOSE:+--verbose}
 }
 

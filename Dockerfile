@@ -9,7 +9,7 @@ LABEL description="Personal AI Assistant with Claude automation for Coolify depl
 LABEL version="1.0.0"
 
 # Build arguments for customization
-ARG CLAWDBOT_VERSION=latest
+ARG OPENCLAW_VERSION=latest
 ARG EXTRA_APT_PACKAGES=""
 ARG INSTALL_CLAUDE_CODE=true
 
@@ -17,7 +17,7 @@ ARG INSTALL_CLAUDE_CODE=true
 ENV NODE_ENV=production
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/home/node
-ENV CLAWDBOT_HOME=/home/node/.clawdbot
+ENV OPENCLAW_HOME=/home/node/.openclaw
 ENV WORKSPACE_DIR=/home/node/clawd
 ENV PATH="/home/node/.bun/bin:/home/node/.npm-global/bin:${PATH}"
 
@@ -46,6 +46,7 @@ RUN corepack enable
 
 # Create non-root user directories
 RUN mkdir -p /home/node/.clawdbot \
+    /home/node/.openclaw \
     /home/node/clawd \
     /home/node/.npm-global \
     /home/node/.npm \
@@ -68,7 +69,7 @@ RUN npm config set prefix '/home/node/.npm-global' \
     && npm config set cache '/home/node/.npm'
 
 # Install OpenClaw (openclaw) globally as node user
-RUN npm install -g openclaw@${CLAWDBOT_VERSION}
+RUN npm install -g openclaw@${OPENCLAW_VERSION}
 
 # Install Claude Code CLI for automation (if enabled)
 RUN if [ "$INSTALL_CLAUDE_CODE" = "true" ]; then \
@@ -97,7 +98,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD /usr/local/bin/healthcheck.sh
 
 # Volumes for persistent data
-VOLUME ["/home/node/.clawdbot", "/home/node/clawd", "/home/node/.claude"]
+VOLUME ["/home/node/.clawdbot", "/home/node/.openclaw", "/home/node/clawd", "/home/node/.claude"]
 
 # Use dumb-init for proper signal handling
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

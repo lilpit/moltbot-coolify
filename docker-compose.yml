@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
+        OPENCLAW_VERSION: ${OPENCLAW_VERSION:-latest}
         EXTRA_APT_PACKAGES: ${EXTRA_APT_PACKAGES:-}
         INSTALL_CLAUDE_CODE: ${INSTALL_CLAUDE_CODE:-true}
     container_name: openclaw-gateway
@@ -34,17 +34,17 @@ services:
     # Environment variables - configure in Coolify UI
     environment:
       # Gateway Configuration
-      - CLAWDBOT_GATEWAY_TOKEN=${CLAWDBOT_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - GATEWAY_PORT=${GATEWAY_PORT:-18789}
       - GATEWAY_VERBOSE=${GATEWAY_VERBOSE:-false}
-      
+
       # Model Provider API Keys (at least one required)
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      
+
       # Model Selection
-      - CLAWDBOT_MODEL=${CLAWDBOT_MODEL:-anthropic/claude-sonnet-4-5}
+      - OPENCLAW_MODEL=${OPENCLAW_MODEL:-anthropic/claude-sonnet-4-5}
       
       # Channel Tokens (optional)
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
@@ -62,8 +62,10 @@ services:
     
     # Persistent volumes
     volumes:
-      # OpenClaw configuration and credentials (persisted from moltbot)
+      # Legacy clawdbot configuration (preserved for backward compatibility)
       - moltbot-config:/home/node/.clawdbot
+      # New OpenClaw configuration and credentials
+      - openclaw-config:/home/node/.openclaw
       # Agent workspace (persisted from moltbot)
       - moltbot-workspace:/home/node/clawd
       # Claude credentials for Claude Code automation (persisted from moltbot)
@@ -130,25 +132,28 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        CLAWDBOT_VERSION: ${CLAWDBOT_VERSION:-latest}
+        OPENCLAW_VERSION: ${OPENCLAW_VERSION:-latest}
     container_name: openclaw-cli
     profiles:
       - cli
-    
+
     environment:
-      - CLAWDBOT_GATEWAY_TOKEN=${CLAWDBOT_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - NODE_ENV=production
       - HOME=/home/node
-    
+
     volumes:
+      # Legacy clawdbot configuration (preserved for backward compatibility)
       - moltbot-config:/home/node/.clawdbot
+      # New OpenClaw configuration and credentials
+      - openclaw-config:/home/node/.openclaw
       - moltbot-workspace:/home/node/clawd
       - moltbot-claude:/home/node/.claude
 
     # Override entrypoint for CLI usage
-    entrypoint: ["clawdbot"]
+    entrypoint: ["openclaw"]
     command: ["--help"]
 
     # Connect to gateway network
@@ -162,7 +167,13 @@ volumes:
     name: moltbot-config
     labels:
       - "coolify.volume=true"
-      - "description=OpenClaw configuration and credentials (persisted)"
+      - "description=Legacy Clawdbot configuration (backward compatibility)"
+
+  openclaw-config:
+    name: openclaw-config
+    labels:
+      - "coolify.volume=true"
+      - "description=OpenClaw configuration and credentials"
 
   moltbot-workspace:
     name: moltbot-workspace
