@@ -307,7 +307,6 @@ main() {
     exec openclaw gateway start \
         --port "${GATEWAY_PORT:-18789}" \
         --token "${OPENCLAW_GATEWAY_TOKEN}" \
-        --foreground \
         ${GATEWAY_VERBOSE:+--verbose}
 }
 
