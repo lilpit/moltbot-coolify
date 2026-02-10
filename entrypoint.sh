@@ -18,7 +18,8 @@ CONFIG_FILE="${CONFIG_DIR}/openclaw.json"
 
 # Set up D-Bus and systemd environment for openclaw gateway
 # See: https://github.com/openclaw/openclaw/issues/1818
-export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+# Use home directory since /run requires root privileges
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-${HOME}/.local/run}"
 mkdir -p "${XDG_RUNTIME_DIR}"
 chmod 700 "${XDG_RUNTIME_DIR}"
 
@@ -313,10 +314,15 @@ main() {
 
     # Initialize D-Bus session if not already running
     if [ -z "$DBUS_SESSION_BUS_ADDRESS" ]; then
-        echo "🔧 Initializing D-Bus session..."
-        eval $(dbus-launch --sh-syntax)
-        export DBUS_SESSION_BUS_ADDRESS
-        export DBUS_SESSION_BUS_PID
+        if command -v dbus-launch &> /dev/null; then
+            echo "🔧 Initializing D-Bus session..."
+            eval $(dbus-launch --sh-syntax)
+            export DBUS_SESSION_BUS_ADDRESS
+            export DBUS_SESSION_BUS_PID
+        else
+            echo "⚠️  dbus-launch not available, setting minimal D-Bus environment..."
+            export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+        fi
     fi
 
     exec openclaw gateway start \
